@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "name": "Maria Silva",
+    "email": "maria.silva@escola.com",
+    "role": "gestor",
+    "password_hash": "pbkdf2:sha256:600000$salt$hash"
+  },
+  {
+    "id": 2,
+    "name": "João Santos",
+    "email": "joao.santos@escola.com",
+    "role": "professor",
+    "password_hash": "pbkdf2:sha256:600000$salt$hash"
+  },
+  {
+    "id": 3,
+    "name": "Ana Costa",
+    "email": "ana.costa@escola.com",
+    "role": "gestor",
+    "password_hash": "pbkdf2:sha256:600000$salt$hash"
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "id": "6A",
+    "name": "6º Ano A",
+    "grade": "6º Ano",
+    "shift": "Manhã",
+    "teacher": "João Santos"
+  },
+  {
+    "id": "6B",
+    "name": "6º Ano B",
+    "grade": "6º Ano",
+    "shift": "Tarde",
+    "teacher": "Ana Costa"
+  },
+  {
+    "id": "7A",
+    "name": "7º Ano A",
+    "grade": "7º Ano",
+    "shift": "Manhã",
+    "teacher": "Maria Silva"
+  },
+  {
+    "id": "7B",
+    "name": "7º Ano B",
+    "grade": "7º Ano",
+    "shift": "Tarde",
+    "teacher": "João Santos"
+  }
+]

@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Eventos - Sistema Escolar{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-calendar-alt me-2"></i>
+            Gerenciamento de Eventos
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">
+                <i class="fas fa-plus me-2"></i>
+                Novo Evento
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-6">
+                    <label for="search" class="form-label">Buscar eventos</label>
+                    <input type="text" class="form-control" id="search" name="search" value="{{ search }}" placeholder="Digite o nome ou descrição do evento...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i>Filtrar
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <a href="{{ url_for('events') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Limpar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de eventos -->
+    <div class="row">
+        {% if events %}
+            {% for event in events %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-calendar-day me-2"></i>
+                            {{ event.name }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{ event.description }}</p>
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ event.date }} às {{ event.time }}
+                            </small>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                {{ event.location }}
+                            </small>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="fas fa-user me-1"></i>
+                                Criado por: {{ event.created_by }}
+                            </small>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-sm btn-outline-info me-1" 
+                                onclick="viewEvent({{ event|tojson }})" data-bs-toggle="modal" data-bs-target="#viewEventModal">
+                            <i class="fas fa-eye me-1"></i>Detalhes
+                        </button>
+                        {% if session.user_role == 'gestor' or session.user_name == event.created_by %}
+                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                onclick="editEvent({{ event|tojson }})" data-bs-toggle="modal" data-bs-target="#editEventModal">
+                            <i class="fas fa-edit me-1"></i>Editar
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center text-muted py-5">
+                        <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                        <h5>Nenhum evento encontrado</h5>
+                        <p>Crie o primeiro evento ou ajuste os filtros de busca.</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Calendário -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar me-2"></i>
+                        Calendário de Eventos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="eventsCalendar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar Evento -->
+<div class="modal fade" id="addEventModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Criar Novo Evento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_event') }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="add_name" class="form-label">Nome do Evento *</label>
+                            <input type="text" class="form-control" id="add_name" name="name" required>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="add_description" class="form-label">Descrição *</label>
+                            <textarea class="form-control" id="add_description" name="description" rows="3" required placeholder="Descreva o evento..."></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="add_date" class="form-label">Data *</label>
+                            <input type="date" class="form-control" id="add_date" name="date" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="add_time" class="form-label">Horário *</label>
+                            <input type="time" class="form-control" id="add_time" name="time" required>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="add_location" class="form-label">Local *</label>
+                            <input type="text" class="form-control" id="add_location" name="location" required placeholder="Ex: Auditório Principal">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Criar Evento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Visualizar Evento -->
+<div class="modal fade" id="viewEventModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes do Evento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <h4 id="view_event_name"></h4>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6>Data e Horário:</h6>
+                        <p class="text-muted">
+                            <i class="fas fa-calendar me-2"></i>
+                            <span id="view_event_date"></span> às <span id="view_event_time"></span>
+                        </p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6>Local:</h6>
+                        <p class="text-muted">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            <span id="view_event_location"></span>
+                        </p>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <h6>Descrição:</h6>
+                        <p id="view_event_description" class="text-muted"></p>
+                    </div>
+                    <div class="col-12">
+                        <h6>Criado por:</h6>
+                        <p class="text-muted">
+                            <i class="fas fa-user me-2"></i>
+                            <span id="view_event_created_by"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewEvent(event) {
+    document.getElementById('view_event_name').textContent = event.name;
+    document.getElementById('view_event_date').textContent = event.date;
+    document.getElementById('view_event_time').textContent = event.time;
+    document.getElementById('view_event_location').textContent = event.location;
+    document.getElementById('view_event_description').textContent = event.description;
+    document.getElementById('view_event_created_by').textContent = event.created_by;
+}
+
+// Initialize calendar for events page
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('eventsCalendar');
+    if (calendarEl) {
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'pt-br',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek'
+            },
+            events: '/api/calendar-events',
+            eventClick: function(info) {
+                if (info.event.extendedProps.type === 'event') {
+                    // Show event details
+                    alert('Evento: ' + info.event.title);
+                }
+            }
+        });
+        calendar.render();
+    }
+});
+</script>
+{% endblock %}

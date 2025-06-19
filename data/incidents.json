@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "student_id": 1,
+    "type": "disciplinar",
+    "description": "Conversa excessiva durante a aula",
+    "date": "2024-06-15",
+    "reported_by": "João Santos",
+    "status": "resolvida"
+  },
+  {
+    "id": 2,
+    "student_id": 2,
+    "type": "comportamental",
+    "description": "Não trouxe material escolar",
+    "date": "2024-06-18",
+    "reported_by": "Maria Silva",
+    "status": "pendente"
+  }
+]

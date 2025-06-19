@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema Escolar{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Dashboard</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <small class="text-muted">
+                    Bem-vindo(a), {{ session.user_name }} | 
+                    Perfil: {% if session.user_role == 'gestor' %}Gestor{% else %}Professor{% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Alunos</h5>
+                            <h2 class="mb-0">{{ stats.total_students }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-graduate fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Ocorrências</h5>
+                            <h2 class="mb-0">{{ stats.recent_incidents }}</h2>
+                            <small>Últimos 30 dias</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Eventos</h5>
+                            <h2 class="mb-0">{{ stats.upcoming_events }}</h2>
+                            <small>Próximos</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-calendar-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Reservas</h5>
+                            <h2 class="mb-0">{{ stats.total_reservations }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-door-open fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Ocorrências recentes -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Ocorrências Recentes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_incidents %}
+                        <div class="list-group list-group-flush">
+                            {% for incident in recent_incidents %}
+                            <div class="list-group-item px-0">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ incident.student_name }}</h6>
+                                    <small>{{ incident.date }}</small>
+                                </div>
+                                <p class="mb-1">{{ incident.description[:50] }}{% if incident.description|length > 50 %}...{% endif %}</p>
+                                <small class="text-muted">
+                                    <span class="badge bg-{{ 'success' if incident.status == 'resolvida' else 'warning' }}">
+                                        {{ incident.status.title() }}
+                                    </span>
+                                    - Relatado por: {{ incident.reported_by }}
+                                </small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('incidents') }}" class="btn btn-outline-primary">
+                                Ver todas as ocorrências
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <p>Nenhuma ocorrência recente!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Próximos eventos -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Próximos Eventos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_events %}
+                        <div class="list-group list-group-flush">
+                            {% for event in upcoming_events %}
+                            <div class="list-group-item px-0">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ event.name }}</h6>
+                                    <small>{{ event.date }} às {{ event.time }}</small>
+                                </div>
+                                <p class="mb-1">{{ event.description[:50] }}{% if event.description|length > 50 %}...{% endif %}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}
+                                </small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('events') }}" class="btn btn-outline-primary">
+                                Ver todos os eventos
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                            <p>Nenhum evento próximo!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendário -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar me-2"></i>
+                        Calendário de Eventos e Reservas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
+{% endblock %}

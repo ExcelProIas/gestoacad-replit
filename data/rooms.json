@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "name": "Sala 101",
+    "type": "Sala de Aula",
+    "capacity": 30,
+    "resources": ["Projetor", "Quadro Branco", "Ar Condicionado"]
+  },
+  {
+    "id": 2,
+    "name": "Laboratório de Ciências",
+    "type": "Laboratório",
+    "capacity": 25,
+    "resources": ["Microscópios", "Bancadas", "Material de Laboratório"]
+  },
+  {
+    "id": 3,
+    "name": "Auditório",
+    "type": "Auditório",
+    "capacity": 100,
+    "resources": ["Sistema de Som", "Projetor", "Palco"]
+  },
+  {
+    "id": 4,
+    "name": "Biblioteca",
+    "type": "Biblioteca",
+    "capacity": 40,
+    "resources": ["Computadores", "Livros", "Mesa de Estudo"]
+  }
+]

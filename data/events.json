@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "name": "Reunião de Pais",
+    "description": "Reunião trimestral com os pais dos alunos",
+    "date": "2024-06-25",
+    "time": "19:00",
+    "location": "Auditório Principal",
+    "created_by": "Maria Silva"
+  },
+  {
+    "id": 2,
+    "name": "Feira de Ciências",
+    "description": "Apresentação dos projetos científicos dos alunos",
+    "date": "2024-07-10",
+    "time": "14:00",
+    "location": "Pátio da Escola",
+    "created_by": "Ana Costa"
+  },
+  {
+    "id": 3,
+    "name": "Conselho de Classe",
+    "description": "Avaliação do desempenho dos alunos",
+    "date": "2024-06-30",
+    "time": "08:00",
+    "location": "Sala dos Professores",
+    "created_by": "Maria Silva"
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "room_id": 1,
+    "date": "2024-06-20",
+    "start_time": "14:00",
+    "end_time": "15:30",
+    "purpose": "Aula de reforço de matemática",
+    "reserved_by": "João Santos",
+    "status": "confirmada"
+  },
+  {
+    "id": 2,
+    "room_id": 2,
+    "date": "2024-06-21",
+    "start_time": "10:00",
+    "end_time": "11:30",
+    "purpose": "Experimento de química",
+    "reserved_by": "Maria Silva",
+    "status": "confirmada"
+  }
+]

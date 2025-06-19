@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "name": "Pedro Oliveira",
+    "email": "pedro@email.com",
+    "phone": "(11) 99999-1234",
+    "class_id": "6A",
+    "enrollment_date": "2024-02-01",
+    "status": "ativo"
+  },
+  {
+    "id": 2,
+    "name": "Carla Mendes",
+    "email": "carla@email.com",
+    "phone": "(11) 99999-5678",
+    "class_id": "7B",
+    "enrollment_date": "2024-02-01",
+    "status": "ativo"
+  },
+  {
+    "id": 3,
+    "name": "Lucas Ferreira",
+    "email": "lucas@email.com",
+    "phone": "(11) 99999-9012",
+    "class_id": "6A",
+    "enrollment_date": "2024-02-01",
+    "status": "ativo"
+  }
+]

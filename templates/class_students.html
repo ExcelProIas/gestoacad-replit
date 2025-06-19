@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+
+{% block title %}{{ class_info.name if class_info else 'Turma' }} - Alunos - Sistema Escolar{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-users me-2"></i>
+            Alunos da {{ class_info.name if class_info else 'Turma' }}
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a href="{{ url_for('classes') }}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left me-2"></i>
+                Voltar às Turmas
+            </a>
+            {% if session.user_role == 'gestor' %}
+            <a href="{{ url_for('students') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>
+                Gerenciar Alunos
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Informações da turma -->
+    {% if class_info %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6>Turma</h6>
+                            <p class="mb-0">{{ class_info.name }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6>Série</h6>
+                            <p class="mb-0">{{ class_info.grade }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6>Turno</h6>
+                            <p class="mb-0">{{ class_info.shift }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6>Professor Responsável</h6>
+                            <p class="mb-0">{{ class_info.teacher }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Estatísticas da turma -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>{{ students|length }}</h3>
+                    <p class="mb-0">Total de Alunos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>{{ students|selectattr("status", "equalto", "ativo")|list|length }}</h3>
+                    <p class="mb-0">Alunos Ativos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3>{{ students|selectattr("status", "equalto", "inativo")|list|length }}</h3>
+                    <p class="mb-0">Alunos Inativos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>{{ students|selectattr("status", "equalto", "transferido")|list|length }}</h3>
+                    <p class="mb-0">Transferidos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de alunos -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list me-2"></i>
+                Lista de Alunos
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if students %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Data Matrícula</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-initial rounded-circle bg-primary text-white me-2" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 14px;">
+                                            {{ student.name[0].upper() }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ student.name }}</strong>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="mailto:{{ student.email }}" class="text-decoration-none">
+                                        {{ student.email }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if student.phone %}
+                                        <a href="tel:{{ student.phone }}" class="text-decoration-none">
+                                            {{ student.phone }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ student.enrollment_date }}</td>
+                                <td>
+                                    <span class="status-indicator status-{{ student.status }}"></span>
+                                    <span class="badge bg-{{ 'success' if student.status == 'ativo' else 'warning' if student.status == 'inativo' else 'secondary' }}">
+                                        {{ student.status.title() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                                onclick="viewStudentDetails({{ student|tojson }})" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#studentDetailsModal"
+                                                title="Ver detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                onclick="contactStudent('{{ student.email }}', '{{ student.phone or '' }}')"
+                                                title="Contatar">
+                                            <i class="fas fa-envelope"></i>
+                                        </button>
+                                        {% if session.user_role == 'gestor' %}
+                                        <a href="{{ url_for('students') }}?search={{ student.name }}" 
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Resumo de gênero (se disponível) -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="fas fa-chart-bar me-2"></i>
+                                    Resumo da Turma
+                                </h6>
+                                <div class="row text-center">
+                                    <div class="col-md-4">
+                                        <div class="p-2">
+                                            <h5 class="text-primary">{{ students|length }}</h5>
+                                            <small class="text-muted">Total de Alunos</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="p-2">
+                                            <h5 class="text-success">{{ "%.1f"|format((students|selectattr("status", "equalto", "ativo")|list|length / students|length * 100) if students|length > 0 else 0) }}%</h5>
+                                            <small class="text-muted">Taxa de Atividade</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="p-2">
+                                            <h5 class="text-info">{{ class_info.shift if class_info else 'N/A' }}</h5>
+                                            <small class="text-muted">Turno</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-user-graduate fa-3x mb-3"></i>
+                    <h5>Nenhum aluno matriculado</h5>
+                    <p>Esta turma ainda não possui alunos matriculados.</p>
+                    {% if session.user_role == 'gestor' %}
+                    <a href="{{ url_for('students') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Adicionar Alunos
+                    </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Ações rápidas -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        Ações Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <button type="button" class="btn btn-outline-primary w-100" onclick="exportClassList()">
+                                <i class="fas fa-download me-2"></i>
+                                Exportar Lista
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button type="button" class="btn btn-outline-info w-100" onclick="printClassList()">
+                                <i class="fas fa-print me-2"></i>
+                                Imprimir Lista
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button type="button" class="btn btn-outline-success w-100" onclick="sendClassEmail()">
+                                <i class="fas fa-envelope me-2"></i>
+                                Email da Turma
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('incidents') }}?class={{ class_info.id if class_info else '' }}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Ver Ocorrências
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detalhes do Aluno -->
+<div class="modal fade" id="studentDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes do Aluno</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h4 id="modal_student_name"></h4>
+                        <p class="text-muted" id="modal_student_email"></p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <span id="modal_student_status" class="badge fs-6"></span>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Informações de Contato</h6>
+                        <p><strong>Email:</strong> <span id="modal_student_email_detail"></span></p>
+                        <p><strong>Telefone:</strong> <span id="modal_student_phone"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Informações Acadêmicas</h6>
+                        <p><strong>Turma:</strong> {{ class_info.name if class_info else 'N/A' }}</p>
+                        <p><strong>Data de Matrícula:</strong> <span id="modal_student_enrollment"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-primary" onclick="contactCurrentStudent()">
+                    <i class="fas fa-envelope me-2"></i>
+                    Contatar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentStudent = null;
+
+function viewStudentDetails(student) {
+    currentStudent = student;
+    
+    document.getElementById('modal_student_name').textContent = student.name;
+    document.getElementById('modal_student_email').textContent = student.email;
+    document.getElementById('modal_student_email_detail').textContent = student.email;
+    document.getElementById('modal_student_phone').textContent = student.phone || 'Não informado';
+    document.getElementById('modal_student_enrollment').textContent = student.enrollment_date;
+    
+    const statusElement = document.getElementById('modal_student_status');
+    statusElement.textContent = student.status.charAt(0).toUpperCase() + student.status.slice(1);
+    statusElement.className = `badge fs-6 bg-${student.status === 'ativo' ? 'success' : student.status === 'inativo' ? 'warning' : 'secondary'}`;
+}
+
+function contactStudent(email, phone) {
+    const actions = [];
+    
+    if (email) {
+        actions.push(`<a href="mailto:${email}" class="btn btn-primary me-2"><i class="fas fa-envelope me-2"></i>Enviar Email</a>`);
+    }
+    
+    if (phone) {
+        actions.push(`<a href="tel:${phone}" class="btn btn-success"><i class="fas fa-phone me-2"></i>Ligar</a>`);
+    }
+    
+    if (actions.length === 0) {
+        alert('Nenhuma informação de contato disponível para este aluno.');
+        return;
+    }
+    
+    const actionHtml = actions.join('');
+    
+    // Create a temporary modal for contact options
+    const modalHtml = `
+        <div class="modal fade" id="contactModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Contatar Aluno</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p>Escolha como deseja contatar o aluno:</p>
+                        ${actionHtml}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing contact modal if present
+    const existingModal = document.getElementById('contactModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Add new modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('contactModal'));
+    modal.show();
+    
+    // Remove modal when hidden
+    document.getElementById('contactModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+function contactCurrentStudent() {
+    if (currentStudent) {
+        contactStudent(currentStudent.email, currentStudent.phone);
+    }
+}
+
+function exportClassList() {
+    // Create CSV content
+    const csvContent = "data:text/csv;charset=utf-8," 
+        + "Nome,Email,Telefone,Data Matrícula,Status\n"
+        + {% raw %}'{% for student in students %}'{% endraw %}
+        + '"{{ student.name }}","{{ student.email }}","{{ student.phone or '' }}","{{ student.enrollment_date }}","{{ student.status }}"'
+        + {% raw %}'{% if not loop.last %}\n{% endif %}'{% endraw %}
+        + {% raw %}'{% endfor %}'{% endraw %};
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "lista_alunos_{{ class_info.name if class_info else 'turma' }}.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    if (window.SchoolSystem && window.SchoolSystem.showToast) {
+        window.SchoolSystem.showToast('Lista exportada com sucesso!', 'success');
+    }
+}
+
+function printClassList() {
+    window.print();
+}
+
+function sendClassEmail() {
+    const emails = [
+        {% for student in students %}
+        '{{ student.email }}'{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    const emailList = emails.join(';');
+    const subject = encodeURIComponent('Comunicado - {{ class_info.name if class_info else "Turma" }}');
+    const mailtoLink = `mailto:?bcc=${emailList}&subject=${subject}`;
+    
+    window.location.href = mailtoLink;
+}
+
+// Add print styles when printing
+window.addEventListener('beforeprint', function() {
+    document.body.classList.add('printing');
+});
+
+window.addEventListener('afterprint', function() {
+    document.body.classList.remove('printing');
+});
+</script>
+
+<style>
+@media print {
+    .btn, .card-header, .modal, .navbar, .sidebar {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    .table {
+        font-size: 12px;
+    }
+    
+    .badge {
+        border: 1px solid #000 !important;
+        color: #000 !important;
+        background: transparent !important;
+    }
+}
+</style>
+{% endblock %}
