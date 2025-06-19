@@ -6,7 +6,8 @@
     "description": "Conversa excessiva durante a aula",
     "date": "2024-06-15",
     "reported_by": "João Santos",
-    "status": "resolvida"
+    "status": "resolvida",
+    "ano_letivo": 2025
   },
   {
     "id": 2,
@@ -15,6 +16,7 @@
     "description": "Não trouxe material escolar",
     "date": "2024-06-18",
     "reported_by": "Maria Silva",
-    "status": "pendente"
+    "status": "pendente",
+    "ano_letivo": 2025
   }
 ]
