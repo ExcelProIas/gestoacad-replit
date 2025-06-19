@@ -171,13 +171,13 @@ function viewClass(classData) {
 
 // Chart for class summary (if Chart.js is available)
 document.addEventListener('DOMContentLoaded', function() {
-    const grades = {};
+    const gradesData = {};
     {% for class in classes %}
-        const grade = '{{ class.grade }}';
-        grades[grade] = (grades[grade] || 0) + {{ class.student_count }};
+        const gradeLevel = '{{ class.grade }}';
+        gradesData[gradeLevel] = (gradesData[gradeLevel] || 0) + {{ class.student_count }};
     {% endfor %}
     
-    if (Object.keys(grades).length > 0 && typeof Chart !== 'undefined') {
+    if (Object.keys(gradesData).length > 0 && typeof Chart !== 'undefined') {
         const ctx = document.createElement('canvas');
         ctx.id = 'gradesChart';
         ctx.style.maxHeight = '300px';
@@ -193,9 +193,9 @@ document.addEventListener('DOMContentLoaded', function() {
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(grades),
+                    labels: Object.keys(gradesData),
                     datasets: [{
-                        data: Object.values(grades),
+                        data: Object.values(gradesData),
                         backgroundColor: [
                             '#007bff',
                             '#28a745',

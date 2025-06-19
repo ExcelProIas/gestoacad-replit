@@ -4,27 +4,31 @@
     "name": "6º Ano A",
     "grade": "6º Ano",
     "shift": "Manhã",
-    "teacher": "João Santos"
+    "teacher": "João Santos",
+    "ano_letivo": 2025
   },
   {
     "id": "6B",
     "name": "6º Ano B",
     "grade": "6º Ano",
     "shift": "Tarde",
-    "teacher": "Ana Costa"
+    "teacher": "Ana Costa",
+    "ano_letivo": 2025
   },
   {
     "id": "7A",
     "name": "7º Ano A",
     "grade": "7º Ano",
     "shift": "Manhã",
-    "teacher": "Maria Silva"
+    "teacher": "Maria Silva",
+    "ano_letivo": 2025
   },
   {
     "id": "7B",
     "name": "7º Ano B",
     "grade": "7º Ano",
     "shift": "Tarde",
-    "teacher": "João Santos"
+    "teacher": "João Santos",
+    "ano_letivo": 2025
   }
 ]

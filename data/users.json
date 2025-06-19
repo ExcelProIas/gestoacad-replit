@@ -4,20 +4,35 @@
     "name": "Maria Silva",
     "email": "maria.silva@escola.com",
     "role": "gestor",
-    "password_hash": "scrypt:32768:8:1$7fdpOCz9shfPzsQn$7197de94f03e782ff3dff1603ed856271bcc079ec969b7405d9bf5d22573f00e67eb9ac24b0a6510af3c39dc6f28424a10cf2bf04d60fdf6678b1610d4d0d6c3"
+    "password_hash": "scrypt:32768:8:1$7fdpOCz9shfPzsQn$7197de94f03e782ff3dff1603ed856271bcc079ec969b7405d9bf5d22573f00e67eb9ac24b0a6510af3c39dc6f28424a10cf2bf04d60fdf6678b1610d4d0d6c3",
+    "status": "ativo",
+    "requires_password_change": false
   },
   {
     "id": 2,
     "name": "João Santos",
     "email": "joao.santos@escola.com",
     "role": "professor",
-    "password_hash": "scrypt:32768:8:1$ei5EvSJLhvI6J4xB$2628668c897d334c98c4cbb88ec63dbb8300512adade545c85785f84d1cb2c12b3a9e513bcded4440a2d4875905d4cfd174348cafb91fb853dbe263c42720d6f"
+    "password_hash": "scrypt:32768:8:1$ei5EvSJLhvI6J4xB$2628668c897d334c98c4cbb88ec63dbb8300512adade545c85785f84d1cb2c12b3a9e513bcded4440a2d4875905d4cfd174348cafb91fb853dbe263c42720d6f",
+    "status": "ativo",
+    "requires_password_change": false
   },
   {
     "id": 3,
     "name": "Ana Costa",
     "email": "ana.costa@escola.com",
     "role": "gestor",
-    "password_hash": "scrypt:32768:8:1$UyXueUnn3mIUKybD$3e672822475214652bb9338065bd41d6bbf8ef8e7ef941675be3a11194cddb3a755754cac2a9531fab5b8e4080780e22417f7a908f1615176afbfbd4f6c8c7a5"
+    "password_hash": "scrypt:32768:8:1$UyXueUnn3mIUKybD$3e672822475214652bb9338065bd41d6bbf8ef8e7ef941675be3a11194cddb3a755754cac2a9531fab5b8e4080780e22417f7a908f1615176afbfbd4f6c8c7a5",
+    "status": "ativo",
+    "requires_password_change": false
+  },
+  {
+    "id": 4,
+    "name": "Miriam",
+    "email": "momelo@gmail.com",
+    "role": "gestor",
+    "password_hash": "scrypt:32768:8:1$VALYquUBRWpy7ksL$89f6b4f0f7a3ffcb3b74bf3908f55c16b45990400238d6b6b19594dcac24e15a5dbc657f58e921eba0226469e39e955a829778c29183a5d717e2cc057ac67aba",
+    "status": "ativo",
+    "requires_password_change": true
   }
 ]

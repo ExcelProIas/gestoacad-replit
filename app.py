@@ -21,10 +21,15 @@ def load_json_data(filename):
             return json.load(f)
     except FileNotFoundError:
         logging.error(f"Arquivo {filename} não encontrado")
-        return []
+        return [] if filename != 'config.json' else {"ano_letivo_ativo": 2025}
     except json.JSONDecodeError:
         logging.error(f"Erro ao decodificar JSON do arquivo {filename}")
-        return []
+        return [] if filename != 'config.json' else {"ano_letivo_ativo": 2025}
+
+def get_active_school_year():
+    """Retorna o ano letivo ativo configurado"""
+    config = load_json_data('config.json')
+    return config.get('ano_letivo_ativo', 2025)
 
 def save_json_data(filename, data):
     """Salva dados em um arquivo JSON"""
