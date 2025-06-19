@@ -1,0 +1,71 @@
+# Prompt para Geração de Front-End Escolar
+
+Crie todo o **front-end** de um sistema de coordenação acadêmica escolar **usando React com TypeScript e TailwindCSS**.
+
+## 🧱 Estrutura do Projeto
+
+- Utilize `React + Vite + TailwindCSS`.
+- Organize o projeto com as seguintes pastas:
+  - `/pages`
+  - `/components`
+  - `/hooks`
+  - `/context`
+  - `/types`
+
+## 🔐 Autenticação e Controle de Acesso
+
+- Implementar tela de **login com e-mail e senha**.
+- Após o login, armazenar a sessão no **localStorage**.
+- Roles disponíveis:
+  - `gestor` (engloba diretor, vice-diretor e coordenador)
+  - `professor`
+- O sistema deve redirecionar automaticamente com base no `role` do usuário.
+- Deve haver **logout** e proteção de rotas (`ProtectedRoute`).
+
+## 👥 Funcionalidades por Tipo de Usuário
+
+| Funcionalidade               | Gestor (diretor, vice, coord.) | Professor |
+|-----------------------------|----------------------------------|-----------|
+| Acesso ao Dashboard          | ✅                               | ✅        |
+| Gerenciar alunos             | ✅                               | ❌        |
+| Registrar ocorrências        | ✅                               | ✅        |
+| Gerenciar eventos            | ✅                               | ✅        |
+| Reservar salas e bens        | ✅                               | ✅        |
+| Visualizar turmas            | ✅                               | ✅        |
+| Gerenciar usuários (CRUD)    | ✅                               | ❌        |
+
+## 🧭 Páginas do Sistema
+
+- `/login`: Autenticação de usuário
+- `/dashboard`: Painel geral com redirecionamento baseado no perfil
+- `/alunos`: Cadastro e listagem de alunos (restrito a gestores)
+- `/ocorrencias`: CRUD de ocorrências por aluno
+- `/eventos`: Visualização e gestão de eventos escolares
+- `/reservas`: Agendamento de salas e bens com verificação de disponibilidade
+- `/turmas`: Listagem das turmas e seus respectivos alunos
+- `/usuarios`: Cadastro e gestão de usuários (exclusivo para gestores)
+
+## 🧩 Componentes Esperados
+
+- Sidebar (menu dinâmico por `role`)
+- Header (com nome do usuário e botão de logout)
+- Formulários reutilizáveis
+- Tabelas com paginação e filtros
+- Modal genérico
+- Calendário interativo (com datas de eventos e reservas)
+- Componente de rota protegida (`ProtectedRoute`)
+
+## 📝 Observações Técnicas
+
+- Use **Context API** ou **Zustand** para controle de estado da sessão.
+- Dados devem ser **mockados** (sem integração com backend).
+- Código limpo, bem comentado e em **português**.
+- Interface responsiva e moderna usando Tailwind.
+
+## 🚫 Restrições
+
+- **Não incluir** o perfil de `responsável`.
+- **Não implementar** lógica de backend nem chamadas reais a APIs.
+- Manter foco **exclusivo no front-end** neste momento.
+
+---
