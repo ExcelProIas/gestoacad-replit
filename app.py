@@ -10,7 +10,7 @@ from functools import wraps
 logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
+app.secret_key = os.environ.get("SESSION_SECRET", "escola-sistema-secreto-2024")
 
 def load_json_data(filename):
     """Carrega dados de um arquivo JSON"""

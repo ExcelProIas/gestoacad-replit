@@ -4,20 +4,20 @@
     "name": "Maria Silva",
     "email": "maria.silva@escola.com",
     "role": "gestor",
-    "password_hash": "pbkdf2:sha256:600000$salt$hash"
+    "password_hash": "scrypt:32768:8:1$7fdpOCz9shfPzsQn$7197de94f03e782ff3dff1603ed856271bcc079ec969b7405d9bf5d22573f00e67eb9ac24b0a6510af3c39dc6f28424a10cf2bf04d60fdf6678b1610d4d0d6c3"
   },
   {
     "id": 2,
     "name": "João Santos",
     "email": "joao.santos@escola.com",
     "role": "professor",
-    "password_hash": "pbkdf2:sha256:600000$salt$hash"
+    "password_hash": "scrypt:32768:8:1$ei5EvSJLhvI6J4xB$2628668c897d334c98c4cbb88ec63dbb8300512adade545c85785f84d1cb2c12b3a9e513bcded4440a2d4875905d4cfd174348cafb91fb853dbe263c42720d6f"
   },
   {
     "id": 3,
     "name": "Ana Costa",
     "email": "ana.costa@escola.com",
     "role": "gestor",
-    "password_hash": "pbkdf2:sha256:600000$salt$hash"
+    "password_hash": "scrypt:32768:8:1$UyXueUnn3mIUKybD$3e672822475214652bb9338065bd41d6bbf8ef8e7ef941675be3a11194cddb3a755754cac2a9531fab5b8e4080780e22417f7a908f1615176afbfbd4f6c8c7a5"
   }
 ]
