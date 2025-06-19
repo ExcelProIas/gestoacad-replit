@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "id": 1,
+    "class_id": "6A",
+    "professor_id": 2,
+    "subject": "Matemática",
+    "weekly_hours": 5,
+    "ano_letivo": 2025
+  },
+  {
+    "id": 2,
+    "class_id": "6A",
+    "professor_id": 3,
+    "subject": "Português",
+    "weekly_hours": 4,
+    "ano_letivo": 2025
+  },
+  {
+    "id": 3,
+    "class_id": "6B",
+    "professor_id": 2,
+    "subject": "História",
+    "weekly_hours": 3,
+    "ano_letivo": 2025
+  },
+  {
+    "id": 4,
+    "class_id": "7A",
+    "professor_id": 1,
+    "subject": "Geografia",
+    "weekly_hours": 3,
+    "ano_letivo": 2025
+  }
+]

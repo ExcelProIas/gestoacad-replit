@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">
             <i class="fas fa-chalkboard me-2"></i>
-            Gerenciamento de Turmas
+            Gerenciamento de Turmas - Ano Letivo {{ active_year }}
         </h1>
     </div>
 
@@ -171,13 +171,13 @@ function viewClass(classData) {
 
 // Chart for class summary (if Chart.js is available)
 document.addEventListener('DOMContentLoaded', function() {
-    const gradesData = {};
+    const classGradesData = {};
     {% for class in classes %}
-        const gradeLevel = '{{ class.grade }}';
-        gradesData[gradeLevel] = (gradesData[gradeLevel] || 0) + {{ class.student_count }};
+        const gradeCategory = '{{ class.grade }}';
+        classGradesData[gradeCategory] = (classGradesData[gradeCategory] || 0) + {{ class.student_count }};
     {% endfor %}
     
-    if (Object.keys(gradesData).length > 0 && typeof Chart !== 'undefined') {
+    if (Object.keys(classGradesData).length > 0 && typeof Chart !== 'undefined') {
         const ctx = document.createElement('canvas');
         ctx.id = 'gradesChart';
         ctx.style.maxHeight = '300px';
@@ -193,9 +193,9 @@ document.addEventListener('DOMContentLoaded', function() {
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(gradesData),
+                    labels: Object.keys(classGradesData),
                     datasets: [{
-                        data: Object.values(gradesData),
+                        data: Object.values(classGradesData),
                         backgroundColor: [
                             '#007bff',
                             '#28a745',

@@ -435,30 +435,47 @@ def add_reservation():
 @login_required
 @password_change_required
 def classes():
-    """Gerenciamento de turmas"""
+    """Gerenciamento de turmas filtradas por ano letivo ativo"""
+    active_year = get_active_school_year()
     classes_data = load_json_data('classes.json')
     students_data = load_json_data('students.json')
     
+    # Filtrar turmas do ano letivo ativo
+    active_classes = [c for c in classes_data if c.get('ano_letivo', 2025) == active_year]
+    
     # Adicionar contagem de alunos por turma
-    for class_item in classes_data:
+    for class_item in active_classes:
         class_item['student_count'] = len([s for s in students_data if s['class_id'] == class_item['id']])
     
-    return render_template('classes.html', classes=classes_data)
+    return render_template('classes.html', classes=active_classes, active_year=active_year)
 
 @app.route('/classes/<class_id>/students')
 @login_required
 @password_change_required
 def class_students(class_id):
-    """Listar alunos de uma turma específica"""
+    """Listar alunos e professores alocados de uma turma específica"""
     students_data = load_json_data('students.json')
     classes_data = load_json_data('classes.json')
+    allocations_data = load_json_data('alocacoes_professores.json')
+    users_data = load_json_data('users.json')
     
     class_students = [s for s in students_data if s['class_id'] == class_id]
     class_info = next((c for c in classes_data if c['id'] == class_id), None)
     
+    # Buscar alocações de professores para esta turma
+    class_allocations = [a for a in allocations_data if a.get('class_id') == class_id]
+    
+    # Adicionar informações dos professores
+    for allocation in class_allocations:
+        professor = next((u for u in users_data if u['id'] == allocation.get('professor_id')), None)
+        if professor:
+            allocation['professor_name'] = professor['name']
+            allocation['professor_email'] = professor['email']
+    
     return render_template('class_students.html', 
                          students=class_students, 
-                         class_info=class_info)
+                         class_info=class_info,
+                         allocations=class_allocations)
 
 @app.route('/users')
 @login_required

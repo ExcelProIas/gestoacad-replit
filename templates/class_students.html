@@ -277,8 +277,63 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-8">
-                        <h4 id="modal_student_name"></h4>
-                        <p class="text-muted" id="modal_student_email"></p>
+                        <!-- Professores Alocados -->
+                        <div class="card mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-chalkboard-teacher me-2"></i>
+                                    Professores e Matérias
+                                </h5>
+                                <span class="badge bg-success">{{ allocations|length }} alocações</span>
+                            </div>
+                            <div class="card-body">
+                                {% if allocations %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Professor</th>
+                                                <th>Matéria</th>
+                                                <th>Carga Horária</th>
+                                                <th>Email</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for allocation in allocations %}
+                                            <tr>
+                                                <td>
+                                                    <i class="fas fa-user-tie me-2"></i>
+                                                    {{ allocation.professor_name or 'Professor não encontrado' }}
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-info">{{ allocation.subject or 'Não informado' }}</span>
+                                                </td>
+                                                <td>{{ allocation.weekly_hours or 0 }}h/semana</td>
+                                                <td>
+                                                    <small class="text-muted">{{ allocation.professor_email or '' }}</small>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-user-times text-muted fs-2 mb-3"></i>
+                                    <p class="text-muted">Nenhum professor alocado para esta turma ainda.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- Alunos da Turma -->
+                        <div class="card mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-users me-2"></i>
+                                    Alunos da Turma
+                                </h5>
+                                <span class="badge bg-primary">{{ students|length }} alunos</span>
+                            </div>
                     </div>
                     <div class="col-md-4 text-end">
                         <span id="modal_student_status" class="badge fs-6"></span>
@@ -391,12 +446,15 @@ function contactCurrentStudent() {
 
 function exportClassList() {
     // Create CSV content
-    const csvContent = "data:text/csv;charset=utf-8," 
-        + "Nome,Email,Telefone,Data Matrícula,Status\n"
-        + {% raw %}'{% for student in students %}'{% endraw %}
-        + '"{{ student.name }}","{{ student.email }}","{{ student.phone or '' }}","{{ student.enrollment_date }}","{{ student.status }}"'
-        + {% raw %}'{% if not loop.last %}\n{% endif %}'{% endraw %}
-        + {% raw %}'{% endfor %}'{% endraw %};
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Nome,Email,Telefone,Data Matrícula,Status\n";
+    
+    {% for student in students %}
+    csvContent += '"{{ student.name }}","{{ student.email }}","{{ student.phone or '' }}","{{ student.enrollment_date }}","{{ student.status }}"';
+    {% if not loop.last %}
+    csvContent += '\n';
+    {% endif %}
+    {% endfor %}
     
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
