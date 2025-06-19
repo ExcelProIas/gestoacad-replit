@@ -1,6 +1,8 @@
 import os
 import json
 import logging
+import secrets
+import string
 from datetime import datetime, date
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -34,6 +36,12 @@ def save_json_data(filename, data):
         logging.error(f"Erro ao salvar arquivo {filename}: {e}")
         return False
 
+def generate_temporary_password(length=12):
+    """Gera uma senha aleatória e segura."""
+    alphabet = string.ascii_letters + string.digits + string.punctuation
+    password = ''.join(secrets.choice(alphabet) for i in range(length))
+    return password
+
 def login_required(f):
     """Decorator para rotas que requerem login"""
     @wraps(f)
@@ -55,6 +63,18 @@ def role_required(required_roles):
         return decorated_function
     return decorator
 
+def password_change_required(f):
+    """Decorator que redireciona para a troca de senha se necessário."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('requires_password_change', False):
+            # Permite o acesso apenas à própria página de troca de senha e ao logout
+            if request.endpoint not in ['change_password', 'logout']:
+                flash('Por favor, altere sua senha antes de continuar.', 'warning')
+                return redirect(url_for('change_password'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 @app.route('/')
 def index():
     """Redireciona para login ou dashboard"""
@@ -64,7 +84,7 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Página de login"""
+    """Página de login com verificação de status."""
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -76,12 +96,24 @@ def login():
         users = load_json_data('users.json')
         user = next((u for u in users if u['email'] == email), None)
         
+        # REGRA NOVA: Verificar se o usuário existe e está ativo
+        if user and user.get('status', 'ativo') == 'inativo':
+            flash('Este usuário está inativo e não pode acessar o sistema.', 'error')
+            return render_template('login.html')
+
         if user and check_password_hash(user['password_hash'], password):
             session['user_id'] = user['id']
             session['user_name'] = user['name']
             session['user_email'] = user['email']
             session['user_role'] = user['role']
+            # REGRA NOVA: Armazenar na sessão se precisa trocar a senha
+            session['requires_password_change'] = user.get('requires_password_change', False)
             
+            # REGRA NOVA: Redirecionar para troca de senha se necessário
+            if session['requires_password_change']:
+                flash('Por segurança, você precisa definir uma nova senha.', 'info')
+                return redirect(url_for('change_password'))
+
             flash(f'Bem-vindo(a), {user["name"]}!', 'success')
             return redirect(url_for('dashboard'))
         else:
@@ -98,6 +130,7 @@ def logout():
 
 @app.route('/dashboard')
 @login_required
+@password_change_required
 def dashboard():
     """Dashboard principal"""
     # Carregar dados para estatísticas
@@ -140,6 +173,7 @@ def dashboard():
 
 @app.route('/students')
 @login_required
+@password_change_required
 @role_required(['gestor'])
 def students():
     """Gerenciamento de alunos (apenas gestores)"""
@@ -164,6 +198,7 @@ def students():
 
 @app.route('/students/add', methods=['POST'])
 @login_required
+@password_change_required
 @role_required(['gestor'])
 def add_student():
     """Adicionar novo aluno"""
@@ -190,6 +225,7 @@ def add_student():
 
 @app.route('/students/edit/<int:student_id>', methods=['POST'])
 @login_required
+@password_change_required
 @role_required(['gestor'])
 def edit_student(student_id):
     """Editar aluno"""
@@ -214,6 +250,7 @@ def edit_student(student_id):
 
 @app.route('/students/delete/<int:student_id>')
 @login_required
+@password_change_required
 @role_required(['gestor'])
 def delete_student(student_id):
     """Excluir aluno"""
@@ -229,6 +266,7 @@ def delete_student(student_id):
 
 @app.route('/incidents')
 @login_required
+@password_change_required
 def incidents():
     """Gerenciamento de ocorrências"""
     incidents_data = load_json_data('incidents.json')
@@ -257,6 +295,7 @@ def incidents():
 
 @app.route('/incidents/add', methods=['POST'])
 @login_required
+@password_change_required
 def add_incident():
     """Adicionar nova ocorrência"""
     incidents_data = load_json_data('incidents.json')
@@ -282,6 +321,7 @@ def add_incident():
 
 @app.route('/events')
 @login_required
+@password_change_required
 def events():
     """Gerenciamento de eventos"""
     events_data = load_json_data('events.json')
@@ -296,6 +336,7 @@ def events():
 
 @app.route('/events/add', methods=['POST'])
 @login_required
+@password_change_required
 def add_event():
     """Adicionar novo evento"""
     events_data = load_json_data('events.json')
@@ -321,6 +362,7 @@ def add_event():
 
 @app.route('/reservations')
 @login_required
+@password_change_required
 def reservations():
     """Gerenciamento de reservas"""
     reservations_data = load_json_data('reservations.json')
@@ -337,6 +379,7 @@ def reservations():
 
 @app.route('/reservations/add', methods=['POST'])
 @login_required
+@password_change_required
 def add_reservation():
     """Adicionar nova reserva"""
     reservations_data = load_json_data('reservations.json')
@@ -385,6 +428,7 @@ def add_reservation():
 
 @app.route('/classes')
 @login_required
+@password_change_required
 def classes():
     """Gerenciamento de turmas"""
     classes_data = load_json_data('classes.json')
@@ -398,6 +442,7 @@ def classes():
 
 @app.route('/classes/<class_id>/students')
 @login_required
+@password_change_required
 def class_students(class_id):
     """Listar alunos de uma turma específica"""
     students_data = load_json_data('students.json')
@@ -412,6 +457,7 @@ def class_students(class_id):
 
 @app.route('/users')
 @login_required
+@password_change_required
 @role_required(['gestor'])
 def users():
     """Gerenciamento de usuários (apenas gestores)"""
@@ -428,38 +474,101 @@ def users():
 
 @app.route('/users/add', methods=['POST'])
 @login_required
+@password_change_required
 @role_required(['gestor'])
 def add_user():
-    """Adicionar novo usuário"""
+    """Adicionar novo usuário com senha temporária e status ativo."""
     users_data = load_json_data('users.json')
     
     email = request.form.get('email')
-    password = request.form.get('password')
     
-    # Verificar se email já existe
     if any(u['email'] == email for u in users_data):
         flash('Este email já está em uso.', 'error')
         return redirect(url_for('users'))
     
+    # REGRA NOVA: Gerar senha temporária
+    temp_password = generate_temporary_password()
+
     new_user = {
         'id': max([u['id'] for u in users_data], default=0) + 1,
         'name': request.form.get('name'),
         'email': email,
         'role': request.form.get('role'),
-        'password_hash': generate_password_hash(password)
+        'password_hash': generate_password_hash(temp_password),
+        'status': 'ativo',  # REGRA NOVA
+        'requires_password_change': True  # REGRA NOVA
     }
     
     users_data.append(new_user)
     
     if save_json_data('users.json', users_data):
-        flash('Usuário criado com sucesso!', 'success')
+        # REGRA NOVA: Informar a senha gerada para o gestor
+        flash(f'Usuário criado com sucesso! A senha temporária é: {temp_password}', 'success')
     else:
         flash('Erro ao criar usuário.', 'error')
     
     return redirect(url_for('users'))
 
+@app.route('/users/toggle_status/<int:user_id>')
+@login_required
+@password_change_required
+@role_required(['gestor'])
+def toggle_user_status(user_id):
+    """Ativa ou desativa um usuário."""
+    if user_id == session['user_id']:
+        flash('Você não pode alterar o status do seu próprio usuário.', 'error')
+        return redirect(url_for('users'))
+
+    users_data = load_json_data('users.json')
+    user = next((u for u in users_data if u['id'] == user_id), None)
+
+    if user:
+        # Inverte o status
+        current_status = user.get('status', 'ativo')
+        user['status'] = 'inativo' if current_status == 'ativo' else 'ativo'
+        
+        if save_json_data('users.json', users_data):
+            flash(f'Status do usuário {user["name"]} alterado com sucesso!', 'success')
+        else:
+            flash('Erro ao alterar o status do usuário.', 'error')
+    else:
+        flash('Usuário não encontrado.', 'error')
+        
+    return redirect(url_for('users'))
+
+@app.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    """Página para o usuário definir uma nova senha."""
+    if request.method == 'POST':
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        if not new_password or new_password != confirm_password:
+            flash('As senhas não conferem ou estão vazias. Tente novamente.', 'error')
+            return render_template('change_password.html')
+
+        users = load_json_data('users.json')
+        user = next((u for u in users if u['id'] == session['user_id']), None)
+
+        if user:
+            user['password_hash'] = generate_password_hash(new_password)
+            user['requires_password_change'] = False
+            
+            if save_json_data('users.json', users):
+                session['requires_password_change'] = False # Atualiza a sessão
+                flash('Senha alterada com sucesso!', 'success')
+                return redirect(url_for('dashboard'))
+            else:
+                flash('Ocorreu um erro ao salvar sua nova senha.', 'error')
+        else:
+            flash('Usuário não encontrado.', 'error')
+
+    return render_template('change_password.html')
+
 @app.route('/api/calendar-events')
 @login_required
+@password_change_required
 def calendar_events():
     """API para eventos do calendário"""
     events_data = load_json_data('events.json')
