@@ -3,9 +3,12 @@ import json
 import logging
 import secrets
 import string
+import csv
+import io
 from datetime import datetime, date
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 from functools import wraps
 
 # Configure logging
@@ -587,6 +590,150 @@ def change_password():
             flash('Usuário não encontrado.', 'error')
 
     return render_template('change_password.html')
+
+@app.route('/importar', methods=['GET', 'POST'])
+@login_required
+@password_change_required
+@role_required(['gestor'])
+def importar():
+    """Página e lógica para importação de matrículas via CSV"""
+    if request.method == 'GET':
+        return render_template('importar.html')
+    
+    # Processar upload do arquivo CSV
+    try:
+        ano_letivo = int(request.form.get('ano_letivo'))
+        csv_file = request.files.get('csv_file')
+        
+        if not csv_file or csv_file.filename == '':
+            return jsonify({'success': False, 'message': 'Nenhum arquivo foi selecionado'})
+        
+        if not csv_file.filename.lower().endswith('.csv'):
+            return jsonify({'success': False, 'message': 'Apenas arquivos CSV são permitidos'})
+        
+        # Ler conteúdo do arquivo CSV
+        stream = io.StringIO(csv_file.stream.read().decode("UTF8"), newline=None)
+        csv_reader = csv.DictReader(stream)
+        
+        # Carregar dados existentes
+        students_data = load_json_data('students.json')
+        classes_data = load_json_data('classes.json')
+        enrollments_data = load_json_data('matriculas.json')
+        
+        # Contadores para relatório
+        students_created = 0
+        students_updated = 0
+        classes_created = 0
+        enrollments_created = 0
+        errors = 0
+        error_messages = []
+        
+        # Processar cada linha do CSV
+        for row_num, row in enumerate(csv_reader, start=2):
+            try:
+                # Validar dados obrigatórios
+                if not row.get('nome') or not row.get('email') or not row.get('turma_id'):
+                    error_messages.append(f"Linha {row_num}: Campos obrigatórios faltando (nome, email, turma_id)")
+                    errors += 1
+                    continue
+                
+                nome = row['nome'].strip()
+                email = row['email'].strip().lower()
+                telefone = row.get('telefone', '').strip()
+                turma_id = row['turma_id'].strip()
+                data_nascimento = row.get('data_nascimento', '').strip()
+                
+                # Verificar se a turma existe, se não criar
+                turma_existe = any(c['id'] == turma_id and c.get('ano_letivo', 2025) == ano_letivo for c in classes_data)
+                
+                if not turma_existe:
+                    # Criar nova turma
+                    nova_turma = {
+                        'id': turma_id,
+                        'name': f'Turma {turma_id}',
+                        'grade': turma_id[0] + 'º Ano',  # Assume que o primeiro caractere é o ano
+                        'shift': 'Manhã',  # Padrão
+                        'teacher': 'A definir',
+                        'ano_letivo': ano_letivo
+                    }
+                    classes_data.append(nova_turma)
+                    classes_created += 1
+                
+                # Verificar se o aluno já existe
+                aluno_existente = next((s for s in students_data if s['email'] == email), None)
+                
+                if aluno_existente:
+                    # Atualizar dados do aluno existente
+                    aluno_existente['name'] = nome
+                    if telefone:
+                        aluno_existente['phone'] = telefone
+                    if data_nascimento:
+                        aluno_existente['birth_date'] = data_nascimento
+                    aluno_existente['class_id'] = turma_id
+                    students_updated += 1
+                    student_id = aluno_existente['id']
+                else:
+                    # Criar novo aluno
+                    novo_id = max([s['id'] for s in students_data], default=0) + 1
+                    novo_aluno = {
+                        'id': novo_id,
+                        'name': nome,
+                        'email': email,
+                        'phone': telefone,
+                        'birth_date': data_nascimento,
+                        'enrollment_date': datetime.now().strftime('%Y-%m-%d'),
+                        'class_id': turma_id,
+                        'status': 'ativo'
+                    }
+                    students_data.append(novo_aluno)
+                    students_created += 1
+                    student_id = novo_id
+                
+                # Verificar se a matrícula já existe
+                matricula_existe = any(
+                    m['student_id'] == student_id and 
+                    m['class_id'] == turma_id and 
+                    m.get('ano_letivo', 2025) == ano_letivo 
+                    for m in enrollments_data
+                )
+                
+                if not matricula_existe:
+                    # Criar nova matrícula
+                    nova_matricula = {
+                        'id': max([m['id'] for m in enrollments_data], default=0) + 1,
+                        'student_id': student_id,
+                        'class_id': turma_id,
+                        'ano_letivo': ano_letivo,
+                        'data_matricula': datetime.now().strftime('%Y-%m-%d'),
+                        'status': 'ativa'
+                    }
+                    enrollments_data.append(nova_matricula)
+                    enrollments_created += 1
+                    
+            except Exception as e:
+                error_messages.append(f"Linha {row_num}: Erro ao processar - {str(e)}")
+                errors += 1
+                continue
+        
+        # Salvar dados atualizados
+        save_json_data('students.json', students_data)
+        save_json_data('classes.json', classes_data)
+        save_json_data('matriculas.json', enrollments_data)
+        
+        # Retornar relatório
+        return jsonify({
+            'success': True,
+            'students_created': students_created,
+            'students_updated': students_updated,
+            'classes_created': classes_created,
+            'enrollments_created': enrollments_created,
+            'errors': errors,
+            'error_messages': error_messages[:10]  # Limitar a 10 primeiros erros
+        })
+        
+    except Exception as e:
+        logging.error(f"Erro na importação: {e}")
+        return jsonify({'success': False, 'message': f'Erro interno: {str(e)}'})
 
 @app.route('/api/calendar-events')
 @login_required

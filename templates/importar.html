@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Importar Matrículas - Sistema Escolar{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-file-import me-2"></i>
+            Importar Matrículas
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a href="{{ url_for('students') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Voltar para Alunos
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-upload me-2"></i>
+                        Upload de Planilha CSV
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" id="importForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="ano_letivo" class="form-label">Ano Letivo *</label>
+                                <select class="form-select" id="ano_letivo" name="ano_letivo" required>
+                                    <option value="">Selecione o ano letivo</option>
+                                    <option value="2023">2023</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025" selected>2025</option>
+                                    <option value="2026">2026</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="csv_file" class="form-label">Arquivo CSV *</label>
+                            <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv" required>
+                            <div class="form-text">
+                                Selecione um arquivo CSV com as informações dos alunos. Tamanho máximo: 5MB.
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-outline-secondary me-md-2" onclick="resetForm()">
+                                <i class="fas fa-undo me-2"></i>
+                                Limpar
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-upload me-2"></i>
+                                Importar Matrículas
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Formato do Arquivo CSV
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">O arquivo CSV deve conter as seguintes colunas na ordem:</p>
+                    <ol class="list-group list-group-numbered">
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">nome</div>
+                                Nome completo do aluno
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">email</div>
+                                Email do aluno
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">telefone</div>
+                                Telefone (opcional)
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">turma_id</div>
+                                ID da turma (ex: 6A, 7B)
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">data_nascimento</div>
+                                Formato: DD/MM/AAAA
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-download me-2"></i>
+                        Modelo de Planilha
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Baixe um modelo para usar como referência:</p>
+                    <button type="button" class="btn btn-outline-success w-100" onclick="downloadTemplate()">
+                        <i class="fas fa-file-csv me-2"></i>
+                        Baixar Modelo CSV
+                    </button>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Regras de Importação
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Turmas inexistentes serão criadas automaticamente
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Alunos existentes serão atualizados
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Matrículas duplicadas serão ignoradas
+                        </li>
+                        <li class="mb-0">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Relatório detalhado será gerado
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Modal -->
+    <div class="modal fade" id="progressModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-cog fa-spin me-2"></i>
+                        Processando Importação
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <div class="progress mb-3">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <p class="text-center mb-0">Aguarde enquanto processamos a planilha...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('importForm');
+    const fileInput = document.getElementById('csv_file');
+    const submitBtn = document.getElementById('submitBtn');
+    const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
+
+    // Validação do arquivo
+    fileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            // Verificar tamanho (5MB = 5 * 1024 * 1024 bytes)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('O arquivo é muito grande. Tamanho máximo permitido: 5MB');
+                this.value = '';
+                return;
+            }
+
+            // Verificar extensão
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                alert('Por favor, selecione apenas arquivos CSV.');
+                this.value = '';
+                return;
+            }
+        }
+    });
+
+    // Submit do formulário
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        if (!fileInput.files[0]) {
+            alert('Por favor, selecione um arquivo CSV.');
+            return;
+        }
+
+        // Mostrar modal de progresso
+        progressModal.show();
+        submitBtn.disabled = true;
+
+        // Enviar dados
+        fetch('/importar', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            progressModal.hide();
+            submitBtn.disabled = false;
+            
+            if (data.success) {
+                showSuccessMessage(data);
+            } else {
+                showErrorMessage(data.message || 'Erro ao processar arquivo');
+            }
+        })
+        .catch(error => {
+            progressModal.hide();
+            submitBtn.disabled = false;
+            showErrorMessage('Erro de conexão: ' + error.message);
+        });
+    });
+});
+
+function resetForm() {
+    document.getElementById('importForm').reset();
+}
+
+function downloadTemplate() {
+    const csvContent = "data:text/csv;charset=utf-8," +
+        "nome,email,telefone,turma_id,data_nascimento\n" +
+        "João Silva,joao.silva@email.com,11999999999,6A,15/03/2010\n" +
+        "Maria Santos,maria.santos@email.com,11888888888,6B,22/07/2010\n" +
+        "Pedro Costa,pedro.costa@email.com,,7A,10/12/2009";
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "modelo_importacao_matriculas.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function showSuccessMessage(data) {
+    const alertHtml = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <h4 class="alert-heading">
+                <i class="fas fa-check-circle me-2"></i>
+                Importação Concluída com Sucesso!
+            </h4>
+            <p class="mb-2"><strong>Resumo da importação:</strong></p>
+            <ul class="mb-3">
+                <li><strong>${data.students_created || 0}</strong> novos alunos criados</li>
+                <li><strong>${data.students_updated || 0}</strong> alunos atualizados</li>
+                <li><strong>${data.classes_created || 0}</strong> novas turmas criadas</li>
+                <li><strong>${data.enrollments_created || 0}</strong> matrículas registradas</li>
+                <li><strong>${data.errors || 0}</strong> erros encontrados</li>
+            </ul>
+            <hr>
+            <p class="mb-0">
+                <a href="${window.location.origin}/students" class="btn btn-success btn-sm">
+                    <i class="fas fa-users me-2"></i>
+                    Ver Lista de Alunos
+                </a>
+            </p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+    
+    document.querySelector('.container-fluid').insertAdjacentHTML('afterbegin', alertHtml);
+    document.getElementById('importForm').reset();
+}
+
+function showErrorMessage(message) {
+    const alertHtml = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <h4 class="alert-heading">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Erro na Importação
+            </h4>
+            <p class="mb-0">${message}</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+    
+    document.querySelector('.container-fluid').insertAdjacentHTML('afterbegin', alertHtml);
+}
+</script>
+{% endblock %}

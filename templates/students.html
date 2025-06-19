@@ -10,10 +10,16 @@
             Gerenciamento de Alunos
         </h1>
         <div class="btn-toolbar mb-2 mb-md-0">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
-                <i class="fas fa-plus me-2"></i>
-                Novo Aluno
-            </button>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                    <i class="fas fa-plus me-2"></i>
+                    Novo Aluno
+                </button>
+                <a href="{{ url_for('importar') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-file-import me-2"></i>
+                    Importar Planilha
+                </a>
+            </div>
         </div>
     </div>
 
